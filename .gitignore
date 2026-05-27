@@ -1,12 +1,16 @@
-node_modules/
-Backend/node_modules/
-
-*.db
-Backend/auth.db
-
+# Environment
 .env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.gitattributes
 
-package-lock.json
-yarn.lock
+# Django
+*.log
+local_settings.py
+db.sqlite3
 
-.expo/
+# OS
+.DS_Store
+Thumbs.db
