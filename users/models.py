@@ -52,4 +52,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f'{self.email} ({self.role})'
 
-    
+
+
+class DriverProfile(models.Model):
+
+    PENDING = 'pending'
+    APPROVED = 'approved'
+    REJECTED = 'rejected'
+
+    VERIFICATION_CHOICES = [
+        (PENDING, 'Pending'),
+        (APPROVED, 'Approved'),
+        (REJECTED, 'Rejected'),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='driver_profile')
+    license_number = models.CharField(max_length=20, unique=True)
+    license_expiry_date = models.DateField()
+    car_make = models.CharField(max_length=50)
+    car_model = models.CharField(max_length=50)
+    plate_number = models.CharField(max_length=20, unique=True)
+    is_available = models.BooleanField(default=False)
+    verification_status = models.CharField(max_length=10, choices=VERIFICATION_CHOICES, default = PENDING )
+
+
+    def __str__(self):
+        return f'{self.user.email} - {self.verification_status }'
