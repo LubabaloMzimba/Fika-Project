@@ -3,7 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from phonenumber_field.serializerfields import PhoneNumberField
 from django.contrib.auth import authenticate
 
-from .models import User
+from .models import User, DriverProfile
 
 
 
@@ -74,3 +74,48 @@ class LoginSerializer(serializers.Serializer):
 
         data['user'] = user
         return data
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'email',
+            'phone_number',
+            'first_name',
+            'last_name',
+            'role',
+            'is_active',
+            'is_staff',
+            'date_joined',
+        ]
+        read_only_fields = [
+            'id',
+            'date_joined',
+            'is_staff',
+            'is_active',
+        ]
+
+class DriverProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DriverProfile
+        fields  = [
+            'id',
+            'license_number',
+            'license_expiry_date',
+            'car_make',
+            'car_model',
+            'plate_number',
+            'is_available',
+            'verification_status',
+            'license_photo',
+            'profile_photo',
+        ]
+        read_only_fields = [
+            'id',
+            'is_available',
+            'verification_status',
+        ]

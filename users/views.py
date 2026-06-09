@@ -2,8 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer
-
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, DriverProfileSerializer
+from .permissions import IsDriver
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -51,3 +51,40 @@ class LoginView(APIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
+class UserProfileView(APIView):
+
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+class DriverProfileView(APIView):
+    permission_classes = [IsDriver]
+
+    def get(self, request):
+        try:
+            profile = request.user.driver_profile
+            serializer = DriverProfileSerializer(profile)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except:
+            return Response(
+                {'error': 'Driver profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    def post(self, request):
+        try:
+            request.user.driver_profile
+            return Response(
+                {'error': 'Driver profile already exists.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except:
+            pass
+
+        serializer = DriverProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
