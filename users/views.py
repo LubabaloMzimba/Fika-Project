@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, DriverProfileSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, DriverProfileSerializer, UpdateUserSerializer, UpdateDriverProfileSerializer
 from .permissions import IsDriver
 
 def get_tokens_for_user(user):
@@ -57,8 +57,24 @@ class UserProfileView(APIView):
     def get(self, request):
         serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
 
+    def patch(self, request):
+        serializer = UpdateUserSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+            context={'request': request}
+        )
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response(
+                UserSerializer(user).data,
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 class DriverProfileView(APIView):
     permission_classes = [IsDriver]
@@ -88,3 +104,30 @@ class DriverProfileView(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def patch(self, request):
+        try:
+            profile = request.user.driver_profile
+        except:
+            return Response(
+                {'error': 'Driver profile not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = UpdateDriverProfileSerializer(
+            profile,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                DriverProfileSerializer(profile).data,
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+

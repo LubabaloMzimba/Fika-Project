@@ -119,3 +119,35 @@ class DriverProfileSerializer(serializers.ModelSerializer):
             'is_available',
             'verification_status',
         ]
+
+
+class UpdateUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+        ]
+
+    def validate_email(self, value):
+        user = self.context['request'].user
+        if User.objects.exclude(pk=user.pk).filter(email=value).exists():
+            raise serializers.ValidationError(
+                'This email is already in use.'
+            )
+        return value
+    
+
+class UpdateDriverProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DriverProfile
+        fields = [
+            'car_make',
+            'car_model',
+            'is_available',
+            'license_photo',
+            'profile_photo',
+        ]
