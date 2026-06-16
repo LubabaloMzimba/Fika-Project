@@ -1,9 +1,11 @@
+import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CreateRideSerializer, RideSerializer
 from users.permissions import IsRider, IsDriver
 from .models import Ride
+
 
 
 class CreateRideView(APIView):
@@ -43,6 +45,8 @@ class AcceptRideView(APIView):
         # update ride.driver, ride.status, save
         ride.driver = request.user
         ride.status = Ride.ACCEPTED
+        ride.pickup_otp = str(random.randint(1000, 9999))
+        ride.dropoff_otp = str(random.randint(1000, 9999))
         ride.save()
 
 
