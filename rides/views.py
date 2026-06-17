@@ -102,3 +102,11 @@ class CompleteRideView(APIView):
         ride.save()
 
         return Response(RideSerializer(ride).data, status=status.HTTP_200_OK)
+    
+class RiderRideHistoryView(APIView):
+    permission_classes = [IsRider]
+
+    def get(self, request):
+        rides = Ride.objects.filter(rider=request.user).order_by('-created_at')
+        serializer = RideSerializer(rides, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
