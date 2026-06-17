@@ -51,3 +51,28 @@ class AcceptRideView(APIView):
 
 
         return Response(RideSerializer(ride).data, status=status.HTTP_200_OK)
+    
+
+class StartRideView(APIView):
+    permission_classes = [IsDriver]
+
+    def patch(self, request, ride_id):
+        try:
+            ride = Ride.objects.get(id=ride_id)
+        
+        except Ride.DoesNotExist:
+            return Response({"error": "Ride not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if ride.driver != request.user:
+            return Response({"error": "Ride does not belong to you"}, status=status.HTTP_403_FORBIDDEN)
+
+        if ride.status != Ride.ACCEPTED:
+            return Response({"error": "Ride cannot be started"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('pickup_otp') != ride.pickup_otp:
+            return Response({"error": "Incorrect OTP"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ride.status = Ride.ONGOING
+        ride.save()
+
+        return Response(RideSerializer(ride).data, status=status.HTTP_200_OK)
